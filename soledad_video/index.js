@@ -57,13 +57,5 @@ $(function(){
     imageCanvas = document.createElement('canvas');
     imageCtx = imageCanvas.getContext("2d");
 
-    navigator.mediaDevices.getUserMedia({video: {width: 1280, height: 720}, audio: false})
-        .then(stream => {
-            v.srcObject = stream;
-        })
-        .catch(err => {
-            console.log('navigator.getUserMedia error: ', err)
-        });
-
     main();
 });
