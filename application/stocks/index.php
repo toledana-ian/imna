@@ -1,3 +1,49 @@
+<?php
+function pr($data){
+	echo '<pre>';
+	print_r($data);
+	echo '</pre>';
+}
+
+function getStockData(){
+    function requestStockJson($page=1)
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => array(
+                "X-Requested-With: XMLHttpRequest",
+                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
+            ),
+            CURLOPT_URL => 'https://ph.investing.com/stock-screener/Service/SearchStocks',
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => 'country%5B%5D=45&sector=7%2C5%2C12%2C3%2C8%2C9%2C1%2C6%2C2%2C4%2C10%2C11&industry=81%2C56%2C59%2C41%2C68%2C67%2C88%2C51%2C72%2C47%2C12%2C8%2C50%2C2%2C71%2C9%2C69%2C45%2C46%2C13%2C94%2C102%2C95%2C58%2C100%2C101%2C87%2C31%2C6%2C38%2C79%2C30%2C77%2C28%2C5%2C60%2C18%2C26%2C44%2C35%2C53%2C48%2C49%2C55%2C78%2C7%2C86%2C10%2C1%2C34%2C3%2C11%2C62%2C16%2C24%2C20%2C54%2C33%2C83%2C29%2C76%2C37%2C90%2C85%2C82%2C22%2C14%2C17%2C19%2C43%2C89%2C96%2C57%2C84%2C93%2C27%2C74%2C97%2C4%2C73%2C36%2C42%2C98%2C65%2C70%2C40%2C99%2C39%2C92%2C75%2C66%2C63%2C21%2C25%2C64%2C61%2C32%2C91%2C52%2C23%2C15%2C80&equityType=ORD%2CDRC%2CPreferred%2CUnit%2CClosedEnd%2CREIT%2CELKS%2COpenEnd%2CRight%2CParticipationShare%2CCapitalSecurity%2CPerpetualCapitalSecurity%2CGuaranteeCertificate%2CIGC%2CWarrant%2CSeniorNote%2CDebenture%2CETF%2CADR%2CETC%2CETN&pn='.$page.'&order%5Bcol%5D=viewData.symbol&order%5Bdir%5D=a',
+        ]);
+
+        $resp = curl_exec($curl);
+        curl_close($curl);
+
+        return $resp;
+    }
+
+    $output = [];
+
+    $stockData = json_decode(requestStockJson());
+
+    $totalCount = $stockData->totalCount;
+    $output = $stockData->hits;
+
+    for($i=2; count($output)!=$totalCount; $i++){
+        $output = array_merge($output, json_decode(requestStockJson($i))->hits);
+	}
+
+    return $output;
+}
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,6 +125,12 @@
 		</div>
 	</div>
 </header>
+
+<?php
+
+pr(getStockData());
+
+?>
 
 <main role="main">
 	<div class="album py-5 bg-light">
