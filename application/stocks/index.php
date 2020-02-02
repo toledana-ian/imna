@@ -25,6 +25,18 @@ function getStockData(){
 
         return $resp;
     }
+    function filterData($data){
+        $output = [];
+
+        foreach($data as $datum){
+            if(!isset($datum->tech_sum_86400)) continue;
+            if(strpos($datum->tech_sum_86400, 'buy') !== false){
+                array_push($output, $datum);
+            }
+        }
+
+        return $output;
+    }
 
     $output = [];
 
@@ -37,11 +49,15 @@ function getStockData(){
         $output = array_merge($output, json_decode(requestStockJson($i))->hits);
 	}
 
-    return $output;
+    return filterData($output);
 }
+function getTextColor($text){
+    $isbold = strpos($text, 'Strong') !== false;
 
-
-
+    if(strpos($text, 'Buy') !== false) return ($isbold?'font-weight-bold ':'').'text-success';
+    if(strpos($text, 'Sell') !== false) return ($isbold?'font-weight-bold ':'').'text-danger';
+    return '';
+}
 ?>
 
 <!DOCTYPE html>
@@ -128,7 +144,7 @@ function getStockData(){
 
 <?php
 
-pr(getStockData());
+$stockData = getStockData();
 
 ?>
 
@@ -143,23 +159,24 @@ pr(getStockData());
 				<table id="example" class="table table-striped table-bordered" style="width:100%">
 					<thead>
 					<tr>
+						<th>Symbol</th>
 						<th>Name</th>
-						<th>Position</th>
-						<th>Office</th>
-						<th>Age</th>
-						<th>Start date</th>
-						<th>Salary</th>
+						<th>Change</th>
+						<th>Volume</th>
 					</tr>
 					</thead>
 					<tbody>
-					<?php for($i=0; $i<100; $i++) { ?>
+					<?php foreach($stockData as $stockDatum) { ?>
 					<tr>
-						<td>Ashton Cox</td>
-						<td>Junior Technical Author</td>
-						<td>San Francisco</td>
-						<td>66</td>
-						<td>2009/01/12</td>
-						<td>0</td>
+						<td><?php echo $stockDatum->stock_symbol; ?></td>
+						<td><?php echo $stockDatum->name_trans; ?></td>
+						<td class="<?php
+                            echo $stockDatum->pair_change_percent==0?
+                                '':($stockDatum->pair_change_percent>0?
+                                    'text-success':'text-danger');
+                        ?>"
+                        ><?php echo $stockDatum->pair_change_percent_frmt; ?>%</td>
+                        <td><?php echo $stockDatum->turnover_volume_frmt ?></td>
 					</tr>
 					<?php } ?>
 					</tbody>
